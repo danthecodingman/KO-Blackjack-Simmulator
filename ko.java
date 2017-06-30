@@ -19,13 +19,15 @@ public class ko
     double nextBet = 0;
     double insurance = 0;
     double bank = 10000;
-    int temp = 0;//set to 0
-    int tempArr[] = new int[13]; // st to 0
-    int gdgp = 0; // 0
-    int tempPt = 0; // 0
+    int temp = 0;
+    int tempArr[] = new int[13];
+    int gdgp = 0;
+    int tempPt = 0; 
+    int paceCounter = 0;
+    int daceCounter = 0; 
     public double getBank()
     {
-        for(int i =0; i< 10000000; i++)
+        for(int i =0; i< 10000; i++)
         {
             dealCards();
         }
@@ -45,6 +47,8 @@ public class ko
         gdgp = 0;
         tempPt = 0;
         insurance = 0;
+        paceCounter=0;
+        daceCounter=0;
     }
     public void dealCards()
     {
@@ -300,40 +304,31 @@ public class ko
     }
     public void getPlayer()
     {
-        if(aceCheck(player))
-        {
-            if(aceDoubleCheck())
+        if(aceDoubleCheck()||doubleNoAce())
             {
                 bet = bet *2;
                 player[nextOpen(player)] = getCard();
                 countCard(player[nextOpen(player)-1]);
                 getPlayerHandTotal();
-                if(pt > 21)
+                for(int i =0;i<player.length;i++)
+                {
+                    if(player[i]==11)
+                    {
+                        paceCounter++;
+                    }
+                }
+                while(pt > 21 && paceCounter>0)
                 {
                     pt = pt-10;
+                    paceCounter--;
                 }
-            }
-            else
-            {
-             aceLoop();
-             aceLoop2();
-            }
         }
         else
-        {
-            if(doubleNoAce())
-            {
-                bet = bet * 2;
-                player[nextOpen(player)] = getCard();
-                countCard(player[nextOpen(player)-1]);
-                getPlayerHandTotal();
-            }
-            else
             {
                 basicHit();
             }
         }
-    }
+    
     public void betPay()
     {
         int dc = player.length;
@@ -395,43 +390,33 @@ public class ko
             dt += dealer[i];
         }
     }
-    
     public void basicHit()
     {
-        if(count >= 32 && count < 40)
+        for(int i = 0;i< player.length; i++)
         {
-        if((pt >= 12 && pt <= 15 && dealer[0] >= 7) ||( pt < 12 )||( pt == 12  && dealer[0] == 2) ||( pt == 12  && dealer[0] == 3)|| pt == 16 && dealer[0]>= 7 && dealer[0] != 10)
+            if(player[i]==11)
+            {
+                paceCounter++;
+            }
+        }   
+        while((((pt >= 12 && pt <= 14 && dealer[0] >= 7) ||( pt < 12 )||( pt == 12  && dealer[0] == 2) ||( pt == 12  && dealer[0] == 3)||
+        ( pt == 16 && dealer[0]>= 7 && dealer[0] != 10 &&count >= 32 && count < 40)|| pt==15 && count >= 32 && count < 40||((pt == 16 && dealer[0]>= 7 && dealer[0] != 10 && dealer[0] != 9
+        || pt == 15 && dealer[0]>= 7 && dealer[0] != 10) && count >=40)||(count <32 && pt == 15 || pt ==16))&& paceCounter ==0)|| paceCounter ==0 && pt<=17)
         {
-            player[nextOpen(player)] = getCard();
+            player[nextOpen(dealer)] = getCard();
             countCard(player[nextOpen(player)-1]);
-            getPlayerHandTotal();
-            getPlayer();//Ace Problems
+            pt+= player[nextOpen(player)-1];
+            if(player[nextOpen(player)-1]==11)
+            {
+                paceCounter++;
+            }
+            while(paceCounter>0 && pt>21)
+            {
+             pt = pt-10;
+             paceCounter--;
+            }
         }
         }
-        else if(count >= 40)
-        {
-        if((pt >= 12 && pt <= 14 && dealer[0] >= 7) ||( pt < 12 )||( pt == 12  && dealer[0] == 2) ||( pt == 12  && dealer[0] == 3)|| pt == 16 && dealer[0]>= 7 && dealer[0] != 10 && dealer[0] != 9|| pt == 15 && dealer[0]>= 7 && dealer[0] != 10)
-        {
-            player[nextOpen(player)] = getCard();
-            countCard(player[nextOpen(player)-1]);
-            getPlayerHandTotal();
-            getPlayer();
-        }
-        else
-        {
-        if((pt >= 12 && pt <= 16 && dealer[0] >= 7) ||( pt < 12 )||( pt == 12  && dealer[0] == 2) ||( pt == 12  && dealer[0] == 3))
-        {
-            player[nextOpen(player)] = getCard();
-            countCard(player[nextOpen(player)-1]);
-            getPlayerHandTotal();
-            getPlayer();
-        }
-        }
-        }
-    }
-    
-    
-    
     public boolean aceCheck(int[] arr)
     {
         for(int i = 0; i < arr.length; i++)
@@ -497,29 +482,6 @@ public class ko
             return false;
         }
     }
-    public void aceLoop()
-    {
-        while(pt <= 17 || pt == 18 && dealer[0] >= 9)
-        {
-            player[nextOpen(player)] = getCard();
-            countCard(player[nextOpen(player)-1]);
-            getPlayerHandTotal();
-        }
-    }
-    public void aceLoop2()
-    {
-        if(pt > 21)
-        {
-        pt = pt -10;
-        while((pt >= 12 && pt <= 16 && dealer[0] >= 7) ||( pt < 12 )||( pt == 12  && dealer[0] == 2) ||( pt == 12  && dealer[0] == 3))
-        {
-            player[nextOpen(player)] = getCard();
-            countCard(player[nextOpen(player)-1]);
-            getPlayerHandTotal();
-            pt = pt-10;
-        }
-        }
-    }
     public int nextOpen(int[] arr)
     {
         for(int i = 0; i < arr.length; i++)
@@ -533,60 +495,28 @@ public class ko
     }
     public void getDealer()
     {
-        if(aceCheck(dealer))
+        int daceCounter = 0;
+        for(int i = 0;i< dealer.length; i++)
         {
-            dealerAceLoop();
-            dealerAceLoop2();
+            if(dealer[i]==11)
+            {
+                daceCounter++;
+            }
         }
-        else
-        {
-            basicDealerHit();
-        }
-    }
-     public void dealerAceLoop()
-    {
-        
-        while(dt <= 17 && dt<=21&& aceCounter>0 || dt >=16&& dt <= 21 && aceCounter <=)
+        while(dt <= 17 && daceCounter>0 || dt <=16 && daceCounter==0)
         {
             dealer[nextOpen(dealer)] = getCard();
-            countCard(dealer[nextOpen(dealer)-1]);
-            
-            getDealerHandTotal();
-        }
-    }
-    public void dealerAceLoop2()
-    {
-        getDealerHandTotal();
-        if(dt > 21)
-        {
-        dt = dt -10;
-        while(dt <= 16)
-        {
-            dealer[nextOpen(dealer)] = getCard();//multiple ace problem
             countCard(dealer[nextOpen(dealer)-1]);
             dt+= dealer[nextOpen(dealer)-1];
             if(dealer[nextOpen(dealer)-1]==11)
             {
-                aceCounter++;
+                daceCounter++;
             }
-            while(aceCounter>0 && dt>21)
+            while(daceCounter>0 && dt>21)
             {
              dt = dt-10;
-             aceCounter--;
+             daceCounter--;
             }
-        }
-        
-        }
-    }
-     public void basicDealerHit()
-    {
-        
-        if(dt <= 16)
-        {
-            dealer[nextOpen(dealer)] = getCard();
-            countCard(dealer[nextOpen(dealer)-1]);
-            getDealerHandTotal();
-            getDealer();
         }
     }
 }
